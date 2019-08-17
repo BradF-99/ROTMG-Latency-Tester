@@ -23,6 +23,10 @@ namespace rotmg_latency_tester
         private List<Label> pingLabels = new List<Label>();
         private List<Label> jitterLabels = new List<Label>();
 
+        private readonly FillBehavior fillBehavior = FillBehavior.Stop;
+        private readonly TimeSpan beginTime = TimeSpan.FromSeconds(0);
+        private readonly Duration duration = new Duration(TimeSpan.FromSeconds(0.5));
+
         public MainWindow()
         {
             InitializeComponent();
@@ -173,21 +177,33 @@ namespace rotmg_latency_tester
             Spinner.Visibility = System.Windows.Visibility.Visible;
             progBar.Visibility = System.Windows.Visibility.Visible;
 
-            var fadeAnim = new DoubleAnimation
+            DoubleAnimation spinnerAnim = new DoubleAnimation
             {
-                From = 1.0,
-                To = 0.0,
-                FillBehavior = FillBehavior.Stop,
-                BeginTime = TimeSpan.FromSeconds(0),
-                Duration = new Duration(TimeSpan.FromSeconds(0.5))
+                From = 0.0,
+                To = 1.0,
+                FillBehavior = fillBehavior,
+                BeginTime = beginTime,
+                Duration = duration
             };
-            
+
+            DoubleAnimation barAnim = new DoubleAnimation
+            {
+                From = 0.0,
+                To = 1.0,
+                FillBehavior = fillBehavior,
+                BeginTime = beginTime,
+                Duration = duration
+            };
+
             var storyboard = new Storyboard();
 
-            storyboard.Children.Add(fadeAnim);
-            Storyboard.SetTarget(fadeAnim, Spinner);
-            Storyboard.SetTarget(fadeAnim, progBar);
-            Storyboard.SetTargetProperty(fadeAnim, new PropertyPath(OpacityProperty));
+            storyboard.Children.Add(spinnerAnim);
+            storyboard.Children.Add(barAnim);
+
+            Storyboard.SetTarget(spinnerAnim, Spinner);
+            Storyboard.SetTargetProperty(spinnerAnim, new PropertyPath(OpacityProperty));
+            Storyboard.SetTarget(barAnim, progBar);
+            Storyboard.SetTargetProperty(barAnim, new PropertyPath(OpacityProperty));
 
             storyboard.Completed += delegate { Spinner.Visibility = System.Windows.Visibility.Hidden; progBar.Visibility = System.Windows.Visibility.Hidden; };
             storyboard.Begin();
@@ -202,27 +218,40 @@ namespace rotmg_latency_tester
         private void AnimateRefresh()
         {
             buttonRefresh.IsEnabled = false;
-            Spinner.Visibility = System.Windows.Visibility.Hidden;
-            progBar.Visibility = System.Windows.Visibility.Hidden;
+            Spinner.Visibility = System.Windows.Visibility.Visible;
+            progBar.Visibility = System.Windows.Visibility.Visible;
 
-            var fadeAnim = new DoubleAnimation
+            DoubleAnimation spinnerAnim = new DoubleAnimation
             {
                 From = 0.0,
                 To = 1.0,
-                FillBehavior = FillBehavior.Stop,
-                BeginTime = TimeSpan.FromSeconds(0),
-                Duration = new Duration(TimeSpan.FromSeconds(0.5))
+                FillBehavior = fillBehavior,
+                BeginTime = beginTime,
+                Duration = duration
+            };
+
+            DoubleAnimation barAnim = new DoubleAnimation
+            {
+                From = 0.0,
+                To = 1.0,
+                FillBehavior = fillBehavior,
+                BeginTime = beginTime,
+                Duration = duration
             };
 
             var storyboard = new Storyboard();
 
-            storyboard.Children.Add(fadeAnim);
-            Storyboard.SetTarget(fadeAnim, Spinner);
-            Storyboard.SetTarget(fadeAnim, progBar);
-            Storyboard.SetTargetProperty(fadeAnim, new PropertyPath(OpacityProperty));
+            storyboard.Children.Add(spinnerAnim);
+            storyboard.Children.Add(barAnim);
+
+            Storyboard.SetTarget(spinnerAnim, Spinner);
+            Storyboard.SetTargetProperty(spinnerAnim, new PropertyPath(OpacityProperty));
+            Storyboard.SetTarget(barAnim, progBar);
+            Storyboard.SetTargetProperty(barAnim, new PropertyPath(OpacityProperty));
 
             storyboard.Completed += delegate { Spinner.Visibility = System.Windows.Visibility.Visible; progBar.Visibility = System.Windows.Visibility.Visible; };
             storyboard.Begin();
+
             serverListTabsBlur.Radius = 7.0;
             serverListTabs.IsEnabled = false;
             Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new NoArgDelegate(DeleteLabels));
